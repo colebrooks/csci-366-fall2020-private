@@ -4,6 +4,7 @@ char * print_binary_representation(unsigned int i, char *buffer){
     buffer[0] = '0';
     buffer[1] = 'b';
     // fill out remaining 32 bits, 1 or 0 depending on the value in the number i
+    // Note: both of the below methods work. I have chosen the 2nd because I think it's more readable.
     /*for (int j = 0; j < 32; j++) {
         int bit = i & (1 << j);
         if(bit != 0) {
@@ -15,11 +16,11 @@ char * print_binary_representation(unsigned int i, char *buffer){
 
     for(int j = 0; j < 32; j++) {
         int bit = i & (1 << j);
-        if(bit != 0) {
-           buffer[33-j] = '1';
+        if(bit == 0) {
+           buffer[33-j] = '0';
         }
         else {
-            buffer[33-j] = '0';
+            buffer[33-j] = '1';
         }
     }
     return buffer;
