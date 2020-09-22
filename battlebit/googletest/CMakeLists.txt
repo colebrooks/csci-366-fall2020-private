@@ -6,7 +6,7 @@ add_subdirectory(lib)
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR} ../src)
 
 # 'Google_Tests_run' is the target name
-add_executable(battleBit_tests char_buff.cpp game.cpp)
+add_executable(battleBit_tests char_buff.cpp game.cpp repl.cpp)
 target_link_libraries(battleBit_tests gtest gtest_main battleBit_lib)
 
 add_executable(homework_2 homework_2.cpp)
