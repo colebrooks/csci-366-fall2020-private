@@ -56,10 +56,11 @@ unsigned long long int xy_to_bitval(int x, int y) {
     if(x > 7 || x < 0 || y > 7 || y < 0) {
         return 0;
     }
-    unsigned long long int bits = 1;
+    return (1ull << (x + 8 * y));
+    /*unsigned long long int bits = 1;
     unsigned long long int mask = (x + 8 * y);
     bits = bits << mask;
-    return bits;
+    return bits;*/
 }
 
 struct game * game_get_current() {
@@ -77,23 +78,78 @@ int game_load_board(struct game *game, int player, char * spec) {
     // slot and return 1
     //
     // if it is invalid, you should return -1
+    unsigned long long layout;
     for(int i = 0; i < 15; i = i + 3) {
-       char * ship;
-       ship = spec[i];
-       ship += spec[i+1];
-       ship += spec[i+2];
-       
+        char ship = spec[i];
+        int x = spec[i+1] - '0';
+        int y = spec[i+2];
+        if(ship >= 'A' && ship <= 'Z') {
+            switch (ship) {
+                case 'C' :
+                    add_ship_horizontal(player, x, y, 5);
+                    break;
+                case 'B' :
+                    add_ship_horizontal(player, x, y, 4);
+                    break;
+                case 'D' :
+                    add_ship_horizontal(player, x, y, 3);
+                    break;
+                case 'S' :
+                    add_ship_horizontal(player, x, y, 3);
+                    break;
+                case 'P' :
+                    add_ship_horizontal(player, x, y, 2);
+                    break;
+            }
+        }
+        else {
+            switch (ship) {
+                case 'c' :
+                    add_ship_vertical(player, x, y, 5);
+                    break;
+                case 'b' :
+                    add_ship_vertical(player, x, y, 4);
+                    break;
+                case 'd' :
+                    add_ship_vertical(player, x, y, 3);
+                    break;
+                case 's' :
+                    add_ship_vertical(player, x, y, 3);
+                    break;
+                case 'p' :
+                    add_ship_vertical(player, x, y, 2);
+                    break;
+            }
+        }
     }
+    game->players[player].ships = layout;
 }
 
 int add_ship_horizontal(player_info *player, int x, int y, int length) {
     // implement this as part of Step 2
     // returns 1 if the ship can be added, -1 if not
     // hint: this can be defined recursively
+    if (length == 0) {
+        return 1;
+    }
+    /*if (player->ships | xy_to_bitval(x, y)) {
+        return -1;
+    }*/
+    else {
+        player->ships = player->ships | xy_to_bitval(x, y);
+        add_ship_horizontal(player, x+1, y, length-1);
+    }
 }
 
 int add_ship_vertical(player_info *player, int x, int y, int length) {
     // implement this as part of Step 2
     // returns 1 if the ship can be added, -1 if not
     // hint: this can be defined recursively
+    if (length == 0) {
+        return 1;
+    }
+    else {
+        player->ships | xy_to_bitval(x,y);
+        add_ship_vertical(player, x, y+1, length-1);
+    }
 }
