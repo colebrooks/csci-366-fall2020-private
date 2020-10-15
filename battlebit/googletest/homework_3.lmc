@@ -1,3 +1,32 @@
 ;; TODO - implement counting up from 1 to 10
 ;; in Little Man Computer assembly
 ;; Paste the code below, along with the output
+;;
+;; I realized that when the program is done, the counter is 000.
+;; A HLT instruction. So to save memory, I executed the zeroed
+;; counter as if it were an instruction. I'm assuming that's part
+;; of the logic behind having HLT be 000 in the first place.
+Code:
+LOOP    LDA TEN
+        SUB COUNT
+        OUT
+        LDA COUNT
+        BRZ COUNT
+        SUB ONE
+        STA COUNT
+        BRA LOOP
+TEN     DAT 10
+COUNT   DAT 09
+ONE     DAT 01
+
+Output:
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
