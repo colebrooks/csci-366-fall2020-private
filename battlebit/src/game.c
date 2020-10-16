@@ -4,6 +4,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 #include "game.h"
 
 // STEP 10 - Synchronization: the GAME structure will be accessed by both players interacting
@@ -56,11 +58,7 @@ unsigned long long int xy_to_bitval(int x, int y) {
     if(x > 7 || x < 0 || y > 7 || y < 0) {
         return 0;
     }
-    return (1ull << (x + 8 * y));
-    /*unsigned long long int bits = 1;
-    unsigned long long int mask = (x + 8 * y);
-    bits = bits << mask;
-    return bits;*/
+    return (1ull << (x + 8ull * y));
 }
 
 struct game * game_get_current() {
@@ -77,53 +75,34 @@ int game_load_board(struct game *game, int player, char * spec) {
     // if it is valid, you should write the corresponding unsigned
     // long long value into the Game->players[player].ships data
     // slot and return 1
-    //
+    //add_ship_horizontal
     // if it is invalid, you should return -1
-    unsigned long long layout;
+    //unsigned long long layout;
+    char ships[5] = {'C', 'B', 'D', 'S', 'P'};
+    int lengths[5] = {5, 4, 3, 3, 2};
+    if (spec == NULL || strlen(spec) != 15) { // Check if spec is even the right length
+        return -1;
+    }
     for(int i = 0; i < 15; i = i + 3) {
         char ship = spec[i];
         int x = spec[i+1] - '0';
-        int y = spec[i+2];
-        if(ship >= 'A' && ship <= 'Z') {
-            switch (ship) {
-                case 'C' :
-                    add_ship_horizontal(player, x, y, 5);
-                    break;
-                case 'B' :
-                    add_ship_horizontal(player, x, y, 4);
-                    break;
-                case 'D' :
-                    add_ship_horizontal(player, x, y, 3);
-                    break;
-                case 'S' :
-                    add_ship_horizontal(player, x, y, 3);
-                    break;
-                case 'P' :
-                    add_ship_horizontal(player, x, y, 2);
-                    break;
-            }
+        int y = spec[i+2] - '0';
+        if (strchr(ships, toupper(ship)) == NULL || *strchr(ships, toupper(ship)) == '0') { // Check if ship is allowed
+            return -1;                                                                     // character or already used
         }
-        else {
-            switch (ship) {
-                case 'c' :
-                    add_ship_vertical(player, x, y, 5);
-                    break;
-                case 'b' :
-                    add_ship_vertical(player, x, y, 4);
-                    break;
-                case 'd' :
-                    add_ship_vertical(player, x, y, 3);
-                    break;
-                case 's' :
-                    add_ship_vertical(player, x, y, 3);
-                    break;
-                case 'p' :
-                    add_ship_vertical(player, x, y, 2);
-                    break;
+        int length = lengths[strchr(ships, toupper(ship)) - ships]; // Grab length from corresponding length array.
+        *strchr(ships, toupper(ship)) = '0'; // Update to reflect ship being used.
+        if (ship >= 'A' && ship <= 'Z') {
+            if (add_ship_horizontal(&game->players[player], x, y, length) == -1) {
+                return -1;
+            }
+        } else {
+            if (add_ship_vertical(&game->players[player], x, y, length) == -1) {
+                return -1;
             }
         }
     }
-    game->players[player].ships = layout;
+    return 1;
 }
 
 int add_ship_horizontal(player_info *player, int x, int y, int length) {
@@ -133,9 +112,10 @@ int add_ship_horizontal(player_info *player, int x, int y, int length) {
     if (length == 0) {
         return 1;
     }
-    /*if (player->ships | xy_to_bitval(x, y)) {
+    if (player->ships & xy_to_bitval(x, y) || length > (8 - x)) {
+        player->ships = 0ull;
         return -1;
-    }*/
+    }
     else {
         player->ships = player->ships | xy_to_bitval(x, y);
         add_ship_horizontal(player, x+1, y, length-1);
@@ -149,8 +129,12 @@ int add_ship_vertical(player_info *player, int x, int y, int length) {
     if (length == 0) {
         return 1;
     }
+    if (player->ships & xy_to_bitval(x, y) || length > (8 - y)) {
+        player->ships = 0ull;
+        return -1;
+    }
     else {
-        player->ships | xy_to_bitval(x,y);
+        player->ships = player->ships | xy_to_bitval(x,y);
         add_ship_vertical(player, x, y+1, length-1);
     }
 }
