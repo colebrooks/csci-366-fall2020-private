@@ -41,6 +41,18 @@ int game_fire(game *game, int player, int x, int y) {
     //
     //  If the opponents ships value is 0, they have no remaining ships, and you should set the game state to
     //  PLAYER_1_WINS or PLAYER_2_WINS depending on who won.
+    int opponent = !player;
+    unsigned long long shot = xy_to_bitval(x, y);
+    game->players[player].shots = game->players[player].shots | shot;
+    if (game->players[opponent].ships & shot) {
+        game->players[player].hits = game->players[player].hits | shot;
+        game->players[opponent].ships = game->players[opponent].ships | shot;
+        return 1;
+    }
+    if (!game->players[opponent].ships) {
+        game->status = player ? PLAYER_1_WINS : PLAYER_0_WINS;
+    }
+    return 0;
 }
 
 unsigned long long int xy_to_bitval(int x, int y) {
@@ -55,10 +67,7 @@ unsigned long long int xy_to_bitval(int x, int y) {
     //
     // you will need to use bitwise operators and some math to produce the right
     // value.
-    if(x > 7 || x < 0 || y > 7 || y < 0) {
-        return 0;
-    }
-    return (1ull << (x + 8ull * y));
+    return (x > 7 || x < 0 || y > 7 || y < 0) ? 0 : (1ull << (x + 8ull * y));
 }
 
 struct game * game_get_current() {
@@ -96,10 +105,8 @@ int game_load_board(struct game *game, int player, char * spec) {
             if (add_ship_horizontal(&game->players[player], x, y, length) == -1) {
                 return -1;
             }
-        } else {
-            if (add_ship_vertical(&game->players[player], x, y, length) == -1) {
+        } else if (add_ship_vertical(&game->players[player], x, y, length) == -1) {
                 return -1;
-            }
         }
     }
     return 1;
