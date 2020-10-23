@@ -86,7 +86,6 @@ int game_load_board(struct game *game, int player, char * spec) {
     // slot and return 1
     //add_ship_horizontal
     // if it is invalid, you should return -1
-    //unsigned long long layout;
     char ships[5] = {'C', 'B', 'D', 'S', 'P'};
     int lengths[5] = {5, 4, 3, 3, 2};
     if (spec == NULL || strlen(spec) != 15) { // Check if spec is even the right length
