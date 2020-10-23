@@ -43,14 +43,15 @@ int game_fire(game *game, int player, int x, int y) {
     //  PLAYER_1_WINS or PLAYER_2_WINS depending on who won.
     int opponent = !player;
     unsigned long long shot = xy_to_bitval(x, y);
-    game->players[player].shots = game->players[player].shots | shot;
+    game->status = player ? PLAYER_0_TURN : PLAYER_1_TURN;
+    game->players[player].shots = game->players[player].shots ^ shot;
     if (game->players[opponent].ships & shot) {
-        game->players[player].hits = game->players[player].hits | shot;
-        game->players[opponent].ships = game->players[opponent].ships | shot;
+        game->players[player].hits = game->players[player].hits ^ shot;
+        game->players[opponent].ships = game->players[opponent].ships ^ shot;
+        if (!game->players[opponent].ships) {
+            game->status = player ? PLAYER_1_WINS : PLAYER_0_WINS;
+        }
         return 1;
-    }
-    if (!game->players[opponent].ships) {
-        game->status = player ? PLAYER_1_WINS : PLAYER_0_WINS;
     }
     return 0;
 }
@@ -107,6 +108,9 @@ int game_load_board(struct game *game, int player, char * spec) {
         } else if (add_ship_vertical(&game->players[player], x, y, length) == -1) {
                 return -1;
         }
+    }
+    if (player == 1) {
+        game->status = PLAYER_0_TURN;
     }
     return 1;
 }
