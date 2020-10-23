@@ -240,16 +240,19 @@ TEST(game_status, is_correct) {
     ASSERT_EQ(CREATED, pGame->status);
 
     // player 1 set, now in PLAYER_0_TURN
-    ASSERT_EQ(game_load_board(pGame, 0, spec), 1);
+    ASSERT_EQ(game_load_board(pGame, 1, spec), 1);
     ASSERT_EQ(PLAYER_0_TURN, pGame->status);
 
     // player 0 fires, now PLAYER_1_TURN
     ASSERT_EQ(game_fire(pGame,0,0,0),1);
     ASSERT_EQ(PLAYER_1_TURN, pGame->status);
 
-    pGame->players->ships = 1ull; // set ships to only in (1, 1)
+    player_info *player0 = &pGame->players[0];
+    player0->ships = 1ull; // set ships to only in (1, 1)
+
     // player 1 shoots at (1, 1)
     ASSERT_EQ(game_fire(pGame,1,0,0),1);
+
     // no ships left for player 0, player 1 wins
     ASSERT_EQ(PLAYER_1_WINS, pGame->status);
 }
