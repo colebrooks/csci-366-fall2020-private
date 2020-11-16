@@ -126,6 +126,7 @@ int handle_client_connect(int player) {
                 cb_append(output_buffer, "\nPlayer ");
                 cb_append_int(output_buffer, player);
                 cb_append(output_buffer, " says: ");
+                //NOTE: use while(char_buff.next_token != NULL) here
                 cb_append(output_buffer, arg1);
                 cb_append(output_buffer, " ");
                 cb_append(output_buffer, arg2);
