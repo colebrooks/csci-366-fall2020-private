@@ -126,10 +126,15 @@ int handle_client_connect(int player) {
                 cb_append(output_buffer, "\nPlayer ");
                 cb_append_int(output_buffer, player);
                 cb_append(output_buffer, " says: ");
-                //NOTE: use while(char_buff.next_token != NULL) here
                 cb_append(output_buffer, arg1);
                 cb_append(output_buffer, " ");
                 cb_append(output_buffer, arg2);
+                char *arg3 = cb_next_token(input_buffer);
+                while (arg3 != NULL) {
+                    cb_append(output_buffer, " ");
+                    cb_append(output_buffer, arg3);
+                    arg3 = cb_next_token(input_buffer);
+                }
                 server_broadcast(output_buffer);
                 continue;
             }
@@ -142,10 +147,10 @@ int handle_client_connect(int player) {
 
 void server_broadcast(char_buff *msg) {
     // send message to all players
+    cb_write(0, msg);
     cb_append(msg, "\nbattleBit (? for help) > ");
     cb_write(SERVER->player_sockets[0], msg);
     cb_write(SERVER->player_sockets[1], msg);
-    cb_write(0, msg);
 }
 
 int run_server() {
@@ -196,6 +201,7 @@ int run_server() {
         int player = 0;
 
         while ((client_socket_fd = accept(server_socket_fd, (struct sockaddr *) &client, &size_from_connect)) > 0) {
+            puts("Connection accepted");
             SERVER->player_sockets[player] = client_socket_fd;
             pthread_create(&SERVER->player_threads[player], NULL, (void *) handle_client_connect, (void *) player);
             player++;

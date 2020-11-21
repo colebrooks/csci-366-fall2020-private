@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <pthread.h>
 #include "game.h"
 
 // STEP 10 - Synchronization: the GAME structure will be accessed by both players interacting
@@ -13,6 +14,7 @@
 // Add the appropriate synchronization needed to ensure a clean battle.
 
 static game * GAME = NULL;
+pthread_mutex_t *LOCK;
 
 void game_init() {
     if (GAME) {
@@ -22,6 +24,9 @@ void game_init() {
     GAME->status = CREATED;
     game_init_player_info(&GAME->players[0]);
     game_init_player_info(&GAME->players[1]);
+    LOCK = malloc(sizeof(pthread_mutex_t));
+    pthread_mutex_init(LOCK, NULL);
+
 }
 
 void game_init_player_info(player_info *player_info) {
@@ -41,6 +46,7 @@ int game_fire(game *game, int player, int x, int y) {
     //
     //  If the opponents ships value is 0, they have no remaining ships, and you should set the game state to
     //  PLAYER_1_WINS or PLAYER_2_WINS depending on who won.
+    pthread_mutex_lock(LOCK);
     int opponent = !player;
     unsigned long long shot = xy_to_bitval(x, y);
     game->status = player ? PLAYER_0_TURN : PLAYER_1_TURN;
@@ -51,8 +57,10 @@ int game_fire(game *game, int player, int x, int y) {
         if (!game->players[opponent].ships) {
             game->status = player ? PLAYER_1_WINS : PLAYER_0_WINS;
         }
+        pthread_mutex_unlock(LOCK);
         return 1;
     }
+    pthread_mutex_unlock(LOCK);
     return 0;
 }
 
@@ -101,17 +109,23 @@ int game_load_board(struct game *game, int player, char * spec) {
         }
         int length = lengths[strchr(ships, toupper(ship)) - ships]; // Grab length from corresponding length array.
         *strchr(ships, toupper(ship)) = '0'; // Update to reflect ship being used.
+        pthread_mutex_lock(LOCK);
         if (ship >= 'A' && ship <= 'Z') {
             if (add_ship_horizontal(&game->players[player], x, y, length) == -1) {
+                pthread_mutex_unlock(LOCK);
                 return -1;
             }
         } else if (add_ship_vertical(&game->players[player], x, y, length) == -1) {
+                pthread_mutex_unlock(LOCK);
                 return -1;
         }
+        pthread_mutex_unlock(LOCK);
     }
+    pthread_mutex_lock(LOCK);
     if (player == 1) {
         game->status = PLAYER_0_TURN;
     }
+    pthread_mutex_unlock(LOCK);
     return 1;
 }
 
