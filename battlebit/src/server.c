@@ -147,8 +147,8 @@ int handle_client_connect(int player) {
 
 void server_broadcast(char_buff *msg) {
     // send message to all players
-    cb_write(0, msg); //Server socket has default file descriptor of 0
     cb_append(msg, "\nbattleBit (? for help) > ");
+    cb_write(0, msg); //Server socket has default file descriptor of 0
     cb_write(SERVER->player_sockets[0], msg);
     cb_write(SERVER->player_sockets[1], msg);
 }
@@ -206,6 +206,8 @@ int run_server() {
             pthread_create(&SERVER->player_threads[player], NULL, (void *) handle_client_connect, (void *) player);
             player++;
             if (player > 1) {
+                fputs("battleBit (? for help) > ", stdout);
+                fflush(stdout);
                 break;
             }
         }
