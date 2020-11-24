@@ -36,6 +36,7 @@ struct char_buff * repl_read_command(char * prompt) {
 
 void repl_execute_command(struct char_buff * buffer) {
     char* command = cb_tokenize(buffer, " \n");
+    char_buff *output_buffer = cb_create(2000);
     if (command) {
         char* arg1 = cb_next_token(buffer);
         char* arg2 = cb_next_token(buffer);
@@ -57,7 +58,8 @@ void repl_execute_command(struct char_buff * buffer) {
         } else if(strcmp(command, "show") == 0) {
 
             // work with repl_print_board
-
+            repl_print_board(game_get_current(), atoi(arg1), output_buffer);
+            cb_print(output_buffer);
         } else if(strcmp(command, "reset") == 0) {
 
             game_init();
@@ -65,10 +67,12 @@ void repl_execute_command(struct char_buff * buffer) {
         } else if (strcmp(command, "load") == 0) {
 
             // work with game_load_board
+            game_load_board(game_get_current(), atoi(arg1), arg2);
 
         } else if (strcmp(command, "fire") == 0) {
 
             // work with game_fire
+            game_fire(game_get_current(), atoi(arg1), atoi(arg2), atoi(arg3));
 
         } else if (strcmp(command, "nasm") == 0) {
             nasm_hello_world();
@@ -78,6 +82,7 @@ void repl_execute_command(struct char_buff * buffer) {
         } else {
             printf("Unknown Command: %s\n", command);
         }
+        cb_reset(output_buffer);
     }
 }
 
