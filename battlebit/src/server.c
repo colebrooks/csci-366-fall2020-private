@@ -129,7 +129,7 @@ int handle_client_connect(int player) {
                 cb_append(output_buffer, arg1);
                 cb_append(output_buffer, " ");
                 cb_append(output_buffer, arg2);
-                char *arg3 = cb_next_token(input_buffer);
+                char *arg3 = cb_next_token(input_buffer); //Used to deal with annoying C string behaviour.
                 while (arg3 != NULL) {
                     cb_append(output_buffer, " ");
                     cb_append(output_buffer, arg3);
@@ -147,7 +147,7 @@ int handle_client_connect(int player) {
 
 void server_broadcast(char_buff *msg) {
     // send message to all players
-    cb_write(0, msg);
+    cb_write(0, msg); //Server socket has default file descriptor of 0
     cb_append(msg, "\nbattleBit (? for help) > ");
     cb_write(SERVER->player_sockets[0], msg);
     cb_write(SERVER->player_sockets[1], msg);
